@@ -16,37 +16,50 @@ pipeline {
 
         stage('Setup Environment') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh '''
+                    python3 --version
+                    python3 -m pip install --upgrade pip
+                    python3 -m pip install -r "requirements.txt"
+                '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'mkdir -p ${REPORT_DIR}'
-
                 sh '''
-                    pytest test_calculator.py -v \
-                    --html=${REPORT_DIR}/report.html \
-                    --self-contained-html
-                '''
-            }
-        }
+                    mkdir -p ${REPORT_DIR}
 
-        stage('Archive Report') {
-            steps {
-                archiveArtifacts artifacts: 'reports/*.html',
-                                   allowEmptyArchive: true
+                    python3 -m pytest \
+                        test_calculator.py \
+                        --html=${REPORT_DIR}/test-report.html \
+                        --self-contained-html
+                '''
             }
         }
     }
 
     post {
+
+        always {
+            echo 'Publishing test report...'
+
+            publishHTML([
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'reports',
+                reportFiles: 'test-report.html',
+                reportName: 'Pytest HTML Report',
+                reportTitles: 'Calculator Test Results'
+            ])
+        }
+
         success {
-            echo 'CI PASSED: All tests passed.'
+            echo 'All tests passed successfully!'
         }
 
         failure {
-            echo 'CI FAILED: Check test report.'
+            echo 'Tests failed. Check the Jenkins console and HTML report.'
         }
     }
 }
