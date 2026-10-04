@@ -1,3 +1,4 @@
+
 pipeline {
 
     agent any
@@ -23,7 +24,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    pip3 install -r requirements.txt
+                    pip3 install --break-system-packages -r requirements.txt
                 '''
             }
         }
@@ -47,3 +48,4 @@ pipeline {
         }
     }
 }
+
