@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+
+    agent {
+        docker {
+            image 'python:3.12'
+        }
+    }
 
     environment {
         REPORT_DIR = 'reports'
@@ -17,9 +22,9 @@ pipeline {
         stage('Setup Environment') {
             steps {
                 sh '''
-                    python3 --version
-                    python3 -m pip install --upgrade pip
-                    python3 -m pip install -r "requirements.txt"
+                    python --version
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
                 '''
             }
         }
@@ -29,8 +34,7 @@ pipeline {
                 sh '''
                     mkdir -p ${REPORT_DIR}
 
-                    python3 -m pytest \
-                        test_calculator.py \
+                    pytest test_calculator.py \
                         --html=${REPORT_DIR}/test-report.html \
                         --self-contained-html
                 '''
@@ -41,17 +45,7 @@ pipeline {
     post {
 
         always {
-            echo 'Publishing test report...'
-
-            publishHTML([
-                allowMissing: true,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'reports',
-                reportFiles: 'test-report.html',
-                reportName: 'Pytest HTML Report',
-                reportTitles: 'Calculator Test Results'
-            ])
+            echo 'Test execution completed.'
         }
 
         success {
@@ -59,7 +53,8 @@ pipeline {
         }
 
         failure {
-            echo 'Tests failed. Check the Jenkins console and HTML report.'
+            echo 'Tests failed. Check the Jenkins console output.'
         }
     }
 }
+
