@@ -1,10 +1,7 @@
+
 pipeline {
 
-    agent {
-        docker {
-            image 'python:3.12'
-        }
-    }
+    agent any
 
     environment {
         REPORT_DIR = 'reports'
@@ -22,9 +19,15 @@ pipeline {
         stage('Setup Environment') {
             steps {
                 sh '''
-                    python --version
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
+                    echo "Installing Python..."
+
+                    apt-get update
+                    apt-get install -y python3 python3-pip
+
+                    python3 --version
+                    pip3 --version
+
+                    pip3 install -r requirements.txt
                 '''
             }
         }
@@ -34,7 +37,7 @@ pipeline {
                 sh '''
                     mkdir -p ${REPORT_DIR}
 
-                    pytest test_calculator.py \
+                    python3 -m pytest test_calculator.py \
                         --html=${REPORT_DIR}/test-report.html \
                         --self-contained-html
                 '''
