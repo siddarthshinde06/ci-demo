@@ -1,11 +1,7 @@
-
+```groovy
 pipeline {
 
     agent any
-
-    environment {
-        REPORT_DIR = 'reports'
-    }
 
     stages {
 
@@ -16,17 +12,18 @@ pipeline {
             }
         }
 
-        stage('Setup Environment') {
+        stage('Check Python') {
             steps {
                 sh '''
-                    echo "Installing Python..."
-
-                    apt-get update
-                    apt-get install -y python3 python3-pip
-
                     python3 --version
                     pip3 --version
+                '''
+            }
+        }
 
+        stage('Install Dependencies') {
+            steps {
+                sh '''
                     pip3 install -r requirements.txt
                 '''
             }
@@ -35,29 +32,20 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
-                    mkdir -p ${REPORT_DIR}
-
-                    python3 -m pytest test_calculator.py \
-                        --html=${REPORT_DIR}/test-report.html \
-                        --self-contained-html
+                    python3 -m pytest test_calculator.py
                 '''
             }
         }
     }
 
     post {
-
-        always {
-            echo 'Test execution completed.'
-        }
-
         success {
-            echo 'All tests passed successfully!'
+            echo 'BUILD SUCCESSFUL - All tests passed!'
         }
 
         failure {
-            echo 'Tests failed. Check the Jenkins console output.'
+            echo 'BUILD FAILED - Check the stage where the error occurred.'
         }
     }
 }
-
+```
