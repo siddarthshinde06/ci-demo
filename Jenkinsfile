@@ -1,4 +1,3 @@
-
 pipeline {
 
     agent any
@@ -44,7 +43,7 @@ pipeline {
         }
 
         failure {
-            echo 'BUILD FAILED - Check the stage where the error occurred.'
+            echo 'BUILD FAILED - Check the console output.'
         }
     }
 }
